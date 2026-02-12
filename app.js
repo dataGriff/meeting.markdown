@@ -1,16 +1,17 @@
-// Meeting Planner Application
+// Meeting Planner Application - Git-backed version
 class MeetingPlanner {
     constructor() {
-        this.meetings = this.loadMeetings();
-        this.currentMeetingId = null;
+        this.meetings = [];
+        this.currentFilename = null;
         this.editMode = false;
+        this.apiBase = window.location.origin + '/api';
         this.init();
     }
 
-    init() {
+    async init() {
         this.setupEventListeners();
-        this.renderMeetings();
         this.setDefaultDate();
+        await this.loadMeetings();
     }
 
     setupEventListeners() {
@@ -33,9 +34,8 @@ class MeetingPlanner {
             this.deleteMeeting();
         });
 
-        document.getElementById('download-markdown-btn').addEventListener('click', () => {
-            this.downloadMarkdown();
-        });
+        // Remove download markdown button functionality - no longer needed
+        document.getElementById('download-markdown-btn').style.display = 'none';
     }
 
     setDefaultDate() {
@@ -43,11 +43,7 @@ class MeetingPlanner {
         document.getElementById('meeting-date').value = today;
     }
 
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    saveMeeting() {
+    async saveMeeting() {
         const title = document.getElementById('meeting-title').value.trim();
         const date = document.getElementById('meeting-date').value;
         const time = document.getElementById('meeting-time').value;
@@ -62,7 +58,6 @@ class MeetingPlanner {
         }
 
         const meeting = {
-            id: this.editMode && this.currentMeetingId ? this.currentMeetingId : this.generateId(),
             title,
             date,
             time,
@@ -70,44 +65,73 @@ class MeetingPlanner {
             agenda,
             notes,
             actionItems,
-            createdAt: this.editMode && this.currentMeetingId ? 
-                this.meetings.find(m => m.id === this.currentMeetingId).createdAt : 
-                new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            createdAt: this.editMode && this.currentFilename ? 
+                this.meetings.find(m => m.filename === this.currentFilename)?.createdAt : 
+                new Date().toISOString()
         };
 
-        if (this.editMode && this.currentMeetingId) {
-            const index = this.meetings.findIndex(m => m.id === this.currentMeetingId);
-            this.meetings[index] = meeting;
-            this.editMode = false;
-            this.currentMeetingId = null;
-        } else {
-            this.meetings.unshift(meeting);
+        try {
+            let response;
+            if (this.editMode && this.currentFilename) {
+                response = await fetch(`${this.apiBase}/meetings/${this.currentFilename}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(meeting)
+                });
+            } else {
+                response = await fetch(`${this.apiBase}/meetings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(meeting)
+                });
+            }
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert(result.message);
+                this.editMode = false;
+                this.currentFilename = null;
+                this.resetForm();
+                await this.loadMeetings();
+                
+                // Show the newly created/updated meeting
+                const meetingToShow = this.meetings.find(m => m.filename === result.filename);
+                if (meetingToShow) {
+                    await this.showMeetingDetail(meetingToShow.filename);
+                }
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error saving meeting:', error);
+            alert('Failed to save meeting. Is the server running?');
         }
-
-        this.storeMeetings();
-        this.renderMeetings();
-        this.resetForm();
-        this.showMeetingDetail(meeting.id);
-
-        // Scroll to top smoothly
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     resetForm() {
         document.getElementById('new-meeting-form').reset();
         this.setDefaultDate();
         this.editMode = false;
-        this.currentMeetingId = null;
+        this.currentFilename = null;
     }
 
-    loadMeetings() {
-        const stored = localStorage.getItem('meetings');
-        return stored ? JSON.parse(stored) : [];
-    }
-
-    storeMeetings() {
-        localStorage.setItem('meetings', JSON.stringify(this.meetings));
+    async loadMeetings() {
+        try {
+            const response = await fetch(`${this.apiBase}/meetings`);
+            if (response.ok) {
+                this.meetings = await response.json();
+                this.renderMeetings();
+            } else {
+                console.error('Failed to load meetings');
+                this.meetings = [];
+                this.renderMeetings();
+            }
+        } catch (error) {
+            console.error('Error loading meetings:', error);
+            this.meetings = [];
+            this.renderMeetings();
+        }
     }
 
     renderMeetings() {
@@ -126,14 +150,11 @@ class MeetingPlanner {
                 day: 'numeric'
             });
 
-            const timeFormatted = meeting.time ? 
-                new Date(`2000-01-01T${meeting.time}`).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }) : '';
+            // Time is already formatted from the server
+            const timeFormatted = meeting.time || '';
 
             return `
-                <div class="meeting-item" data-id="${meeting.id}">
+                <div class="meeting-item" data-filename="${meeting.filename}">
                     <h3>${this.escapeHtml(meeting.title)}</h3>
                     <div class="meeting-meta">
                         <span>📅 ${dateFormatted}</span>
@@ -147,16 +168,16 @@ class MeetingPlanner {
         // Add click listeners to meeting items
         document.querySelectorAll('.meeting-item').forEach(item => {
             item.addEventListener('click', () => {
-                this.showMeetingDetail(item.dataset.id);
+                this.showMeetingDetail(item.dataset.filename);
             });
         });
     }
 
-    showMeetingDetail(meetingId) {
-        const meeting = this.meetings.find(m => m.id === meetingId);
+    async showMeetingDetail(filename) {
+        const meeting = this.meetings.find(m => m.filename === filename);
         if (!meeting) return;
 
-        this.currentMeetingId = meetingId;
+        this.currentFilename = filename;
 
         const detailSection = document.getElementById('meeting-detail');
         const detailTitle = document.getElementById('detail-title');
@@ -164,168 +185,106 @@ class MeetingPlanner {
 
         detailTitle.textContent = meeting.title;
 
-        const dateFormatted = new Date(meeting.date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        try {
+            const response = await fetch(`${this.apiBase}/meetings/${filename}`);
+            if (!response.ok) {
+                throw new Error('Failed to load meeting details');
+            }
+            
+            const data = await response.json();
+            const content = data.content;
+            
+            // Convert markdown to HTML for display
+            const htmlContent = content
+                .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^\*\*(.+?):\*\* (.+)$/gm, '<p><strong>$1:</strong> $2</p>')
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(?!<[uh])/gm, '<p>')
+                .replace(/(?<![>])$/gm, '</p>')
+                .replace(/<p><\/p>/g, '');
 
-        const timeFormatted = meeting.time ? 
-            new Date(`2000-01-01T${meeting.time}`).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '';
+            detailContent.innerHTML = htmlContent;
+            detailSection.classList.remove('hidden');
 
-        let content = `
-            <h3>📅 Date & Time</h3>
-            <p><strong>Date:</strong> ${dateFormatted}</p>
-            ${meeting.time ? `<p><strong>Time:</strong> ${timeFormatted}</p>` : ''}
-        `;
-
-        if (meeting.attendees.length > 0) {
-            content += `
-                <h3>👥 Attendees</h3>
-                <ul>
-                    ${meeting.attendees.map(a => `<li>${this.escapeHtml(a)}</li>`).join('')}
-                </ul>
-            `;
+            // Scroll to detail section
+            detailSection.scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+            console.error('Error loading meeting detail:', error);
+            alert('Failed to load meeting details');
         }
-
-        if (meeting.agenda) {
-            content += `
-                <h3>📋 Agenda</h3>
-                <p>${this.escapeHtml(meeting.agenda).replace(/\n/g, '<br>')}</p>
-            `;
-        }
-
-        if (meeting.notes) {
-            content += `
-                <h3>📝 Notes</h3>
-                <p>${this.escapeHtml(meeting.notes).replace(/\n/g, '<br>')}</p>
-            `;
-        }
-
-        if (meeting.actionItems) {
-            content += `
-                <h3>✅ Action Items</h3>
-                <p>${this.escapeHtml(meeting.actionItems).replace(/\n/g, '<br>')}</p>
-            `;
-        }
-
-        detailContent.innerHTML = content;
-        detailSection.classList.remove('hidden');
-
-        // Scroll to detail section
-        detailSection.scrollIntoView({ behavior: 'smooth' });
     }
 
     closeDetail() {
         document.getElementById('meeting-detail').classList.add('hidden');
-        this.currentMeetingId = null;
+        this.currentFilename = null;
         this.editMode = false;
     }
 
-    editMeeting() {
-        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+    async editMeeting() {
+        const meeting = this.meetings.find(m => m.filename === this.currentFilename);
         if (!meeting) return;
 
-        // Populate form
-        document.getElementById('meeting-title').value = meeting.title;
-        document.getElementById('meeting-date').value = meeting.date;
-        document.getElementById('meeting-time').value = meeting.time || '';
-        document.getElementById('meeting-attendees').value = meeting.attendees.join(', ');
-        document.getElementById('meeting-agenda').value = meeting.agenda || '';
-        document.getElementById('meeting-notes').value = meeting.notes || '';
-        document.getElementById('meeting-action-items').value = meeting.actionItems || '';
+        // Load full meeting content
+        try {
+            const response = await fetch(`${this.apiBase}/meetings/${this.currentFilename}`);
+            if (!response.ok) {
+                throw new Error('Failed to load meeting');
+            }
+            
+            const data = await response.json();
+            const content = data.content;
+            
+            // Parse markdown content back to form fields
+            const agendaMatch = content.match(/## 📋 Agenda\n\n([\s\S]*?)\n\n##/);
+            const notesMatch = content.match(/## 📝 Notes\n\n([\s\S]*?)\n\n##/);
+            const actionItemsMatch = content.match(/## ✅ Action Items\n\n([\s\S]*?)\n\n---/);
+            
+            // Populate form
+            document.getElementById('meeting-title').value = meeting.title;
+            document.getElementById('meeting-date').value = meeting.date;
+            document.getElementById('meeting-time').value = meeting.time || '';
+            document.getElementById('meeting-attendees').value = meeting.attendees.join(', ');
+            document.getElementById('meeting-agenda').value = agendaMatch ? agendaMatch[1].trim() : '';
+            document.getElementById('meeting-notes').value = notesMatch ? notesMatch[1].trim() : '';
+            document.getElementById('meeting-action-items').value = actionItemsMatch ? actionItemsMatch[1].trim() : '';
 
-        this.editMode = true;
-        this.closeDetail();
+            this.editMode = true;
+            this.closeDetail();
 
-        // Scroll to form
-        document.getElementById('meeting-form').scrollIntoView({ behavior: 'smooth' });
+            // Scroll to form
+            document.getElementById('meeting-form').scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+            console.error('Error loading meeting for edit:', error);
+            alert('Failed to load meeting for editing');
+        }
     }
 
-    deleteMeeting() {
-        if (!confirm('Are you sure you want to delete this meeting?')) {
+    async deleteMeeting() {
+        if (!confirm('Are you sure you want to delete this meeting? This will be committed to Git.')) {
             return;
         }
 
-        this.meetings = this.meetings.filter(m => m.id !== this.currentMeetingId);
-        this.storeMeetings();
-        this.renderMeetings();
-        this.closeDetail();
-    }
-
-    generateMarkdown(meeting) {
-        const dateFormatted = new Date(meeting.date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        const timeFormatted = meeting.time ? 
-            new Date(`2000-01-01T${meeting.time}`).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '';
-
-        let markdown = `# ${meeting.title}\n\n`;
-        
-        markdown += `## 📅 Date & Time\n\n`;
-        markdown += `**Date:** ${dateFormatted}\n`;
-        if (meeting.time) {
-            markdown += `**Time:** ${timeFormatted}\n`;
-        }
-        markdown += `\n`;
-
-        if (meeting.attendees.length > 0) {
-            markdown += `## 👥 Attendees\n\n`;
-            meeting.attendees.forEach(attendee => {
-                markdown += `- ${attendee}\n`;
+        try {
+            const response = await fetch(`${this.apiBase}/meetings/${this.currentFilename}`, {
+                method: 'DELETE'
             });
-            markdown += `\n`;
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert(result.message);
+                this.closeDetail();
+                await this.loadMeetings();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error deleting meeting:', error);
+            alert('Failed to delete meeting. Is the server running?');
         }
-
-        if (meeting.agenda) {
-            markdown += `## 📋 Agenda\n\n`;
-            markdown += `${meeting.agenda}\n\n`;
-        }
-
-        if (meeting.notes) {
-            markdown += `## 📝 Notes\n\n`;
-            markdown += `${meeting.notes}\n\n`;
-        }
-
-        if (meeting.actionItems) {
-            markdown += `## ✅ Action Items\n\n`;
-            markdown += `${meeting.actionItems}\n\n`;
-        }
-
-        markdown += `---\n\n`;
-        markdown += `*Created: ${new Date(meeting.createdAt).toLocaleString()}*\n`;
-        markdown += `*Last Updated: ${new Date(meeting.updatedAt).toLocaleString()}*\n`;
-
-        return markdown;
-    }
-
-    downloadMarkdown() {
-        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
-        if (!meeting) return;
-
-        const markdown = this.generateMarkdown(meeting);
-        const filename = `${meeting.date}_${meeting.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
-
-        const blob = new Blob([markdown], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
     }
 
     escapeHtml(text) {

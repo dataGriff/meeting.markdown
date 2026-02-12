@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>📅 Meeting Planner & Notes</h1>
-            <p class="subtitle">Create and manage your meetings with markdown-backed notes</p>
+            <p class="subtitle">Git-backed meeting management with automatic commits</p>
         </header>
 
         <main>
@@ -71,9 +71,9 @@
                     <h2 id="detail-title"></h2>
                     <div class="meeting-actions">
                         <button id="edit-meeting-btn" class="btn btn-secondary">Edit</button>
-                        <button id="download-markdown-btn" class="btn btn-success">Download Markdown</button>
                         <button id="delete-meeting-btn" class="btn btn-danger">Delete</button>
                         <button id="close-detail-btn" class="btn btn-secondary">Close</button>
+                        <button id="download-markdown-btn" class="btn btn-success" style="display:none;">Download Markdown</button>
                     </div>
                 </div>
                 <div id="detail-content"></div>
@@ -83,11 +83,11 @@
             <section class="card info">
                 <h3>ℹ️ How to Use</h3>
                 <ol>
-                    <li><strong>Create meetings:</strong> Fill in the form above and click "Create Meeting"</li>
+                    <li><strong>Create meetings:</strong> Fill in the form above and click "Create Meeting" - automatically committed to Git</li>
                     <li><strong>View meetings:</strong> Click on any meeting in the list to see details</li>
-                    <li><strong>Download markdown:</strong> Export your meeting notes as a markdown file</li>
-                    <li><strong>Persistent storage:</strong> Meetings are saved in your browser's local storage</li>
-                    <li><strong>Share with Git:</strong> Download markdown files and commit them to your repository</li>
+                    <li><strong>Edit/Delete:</strong> Changes are automatically committed to the repository</li>
+                    <li><strong>Git integration:</strong> All meetings are stored as markdown files in the /meetings directory</li>
+                    <li><strong>Version control:</strong> Every change creates a Git commit - full history preserved</li>
                 </ol>
             </section>
         </main>
