@@ -129,7 +129,7 @@ meeting.markdown/
 4. Select your repository
 5. Click "Deploy"
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dataGrif/meeting.markdown)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dataGriff/meeting.markdown)
 
 ### Cloudflare Pages
 
