@@ -115,11 +115,14 @@ npm run dev
 #### Environment Variables
 
 - `PORT`: Server port (default: 3000)
+- `CORS_ORIGIN`: Allowed CORS origin (default: '*' for all origins)
 
 Example:
 ```bash
-PORT=8080 npm start
+PORT=8080 CORS_ORIGIN=https://yourdomain.com npm start
 ```
+
+For production, it's recommended to set `CORS_ORIGIN` to your specific domain.
 
 ## 🔧 Technologies Used
 
