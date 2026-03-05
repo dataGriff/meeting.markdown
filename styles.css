@@ -1,0 +1,313 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-text);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 30px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+header .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+main {
+    padding: 30px;
+}
+
+.card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--card-shadow);
+}
+
+.card h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.75rem;
+}
+
+.card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.card.info {
+    background: var(--light-bg);
+    border-left: 4px solid var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark-text);
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3a7bc8;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--secondary-color);
+    padding: 40px;
+    font-style: italic;
+}
+
+.meeting-item {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.meeting-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+    transform: translateX(5px);
+}
+
+.meeting-item h3 {
+    color: var(--dark-text);
+    margin-bottom: 8px;
+    font-size: 1.25rem;
+}
+
+.meeting-item .meeting-meta {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.meeting-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.meeting-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#detail-content {
+    line-height: 1.8;
+}
+
+#detail-content h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+#detail-content p {
+    margin-bottom: 10px;
+}
+
+#detail-content ul {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+footer {
+    background: var(--light-bg);
+    padding: 20px;
+    text-align: center;
+    color: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+}
+
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    header .subtitle {
+        font-size: 1rem;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .meeting-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .meeting-actions {
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+
+    .container {
+        box-shadow: none;
+    }
+
+    #meeting-form,
+    .meeting-actions,
+    footer {
+        display: none;
+    }
+}

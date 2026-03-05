@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Planner & Notes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📅 Meeting Planner & Notes</h1>
+            <p class="subtitle">Git-backed meeting management with automatic commits</p>
+        </header>
+
+        <main>
+            <!-- Meeting Form -->
+            <section id="meeting-form" class="card">
+                <h2>Create New Meeting</h2>
+                <form id="new-meeting-form">
+                    <div class="form-group">
+                        <label for="meeting-title">Meeting Title *</label>
+                        <input type="text" id="meeting-title" required placeholder="e.g., Team Standup">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-date">Date *</label>
+                        <input type="date" id="meeting-date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-time">Time</label>
+                        <input type="time" id="meeting-time">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-attendees">Attendees</label>
+                        <input type="text" id="meeting-attendees" placeholder="Separate with commas">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-agenda">Agenda</label>
+                        <textarea id="meeting-agenda" rows="4" placeholder="Meeting agenda items..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-notes">Notes</label>
+                        <textarea id="meeting-notes" rows="6" placeholder="Meeting notes..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="meeting-action-items">Action Items</label>
+                        <textarea id="meeting-action-items" rows="4" placeholder="Action items..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Create Meeting</button>
+                </form>
+            </section>
+
+            <!-- Meetings List -->
+            <section id="meetings-list" class="card">
+                <h2>Your Meetings</h2>
+                <div id="meetings-container">
+                    <p class="empty-state">No meetings yet. Create your first meeting above!</p>
+                </div>
+            </section>
+
+            <!-- Meeting Detail View -->
+            <section id="meeting-detail" class="card hidden">
+                <div class="meeting-detail-header">
+                    <h2 id="detail-title"></h2>
+                    <div class="meeting-actions">
+                        <button id="edit-meeting-btn" class="btn btn-secondary">Edit</button>
+                        <button id="delete-meeting-btn" class="btn btn-danger">Delete</button>
+                        <button id="close-detail-btn" class="btn btn-secondary">Close</button>
+                        <button id="download-markdown-btn" class="btn btn-success" style="display:none;">Download Markdown</button>
+                    </div>
+                </div>
+                <div id="detail-content"></div>
+            </section>
+
+            <!-- Instructions -->
+            <section class="card info">
+                <h3>ℹ️ How to Use</h3>
+                <ol>
+                    <li><strong>Create meetings:</strong> Fill in the form above and click "Create Meeting" - automatically committed to Git</li>
+                    <li><strong>View meetings:</strong> Click on any meeting in the list to see details</li>
+                    <li><strong>Edit/Delete:</strong> Changes are automatically committed to the repository</li>
+                    <li><strong>Git integration:</strong> All meetings are stored as markdown files in the /meetings directory</li>
+                    <li><strong>Version control:</strong> Every change creates a Git commit - full history preserved</li>
+                </ol>
+            </section>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ for markdown-based meeting management | <a href="https://github.com/dataGriff/meeting.markdown" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
